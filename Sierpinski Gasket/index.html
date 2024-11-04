@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebGL Multi-Triangle</title>
+</head>
+<body>
+  <canvas id="gl-canvas" width="512" height="512">
+    Your browser doesn't support HTML5 canvas
+  </canvas>
+  <script src="script.js"></script>
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec2 vPosition;
+    void main() {
+        gl_Position = vec4(vPosition, 0.0, 1.0);
+    }
+  </script>
+
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    void main() {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+  </script>
+</body>
+</html>
