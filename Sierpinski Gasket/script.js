@@ -1,26 +1,12 @@
 // Utility function for 2D vectors
-function vec2(x, y) {
-    return [x, y];
-}
-
-// Mix function to get midpoint between two points
-function mix(a, b, t) {
-    return [(1 - t) * a[0] + t * b[0], (1 - t) * a[1] + t * b[1]];
-}
-
-// Flatten function to convert an array of vec2 to Float32Array
-function flatten(arr) {
-    return new Float32Array(arr.flat());
-}
-
 var points = [];
 var NumTimesToSubdivide = 5; // Controls the level of recursion
 
 // Initial vertices of the triangle
 var vertices = [
-    vec2(-1, -1),
-    vec2(0, 1),
-    vec2(1, -1)
+    [-1, -1],
+    [0, 1],
+    [1, -1]
 ];
 
 // Function to push vertices of one triangle into points
@@ -33,9 +19,9 @@ function divideTriangle(a, b, c, count) {
     if (count === 0) {
         triangle(a, b, c);
     } else {
-        var ab = mix(a, b, 0.5);
-        var ac = mix(a, c, 0.5);
-        var bc = mix(b, c, 0.5);
+        var ab = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        var ac = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2];
+        var bc = [(b[0] + c[0]) / 2, (b[1] + c[1]) / 2];
         count--;
         //three new triangles
         divideTriangle(a, ab, ac, count);
@@ -67,7 +53,7 @@ function init() {
     // Load data into GPU
     var bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points.flat()), gl.STATIC_DRAW);
 
     // Link vertex position attribute from shader
     var vPosition = gl.getAttribLocation(program, "vPosition");
@@ -82,12 +68,6 @@ function loadShader(gl, type, source) {
     var shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
-    }
     return shader;
 }
 
