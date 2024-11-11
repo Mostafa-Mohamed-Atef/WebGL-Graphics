@@ -17,14 +17,9 @@ void main() {
   gl_FragColor = vec4(fragColor, 1.0);
 }`;
 
-var InitDemo = function () {
+
 	var canvas = document.getElementById('game-surface');
 	var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-
-	if (!gl) {
-		alert('Your browser does not support WebGL');
-		return;
-	}
 
 	gl.clearColor(0.75, 0.85, 0.8, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
@@ -65,4 +60,3 @@ var InitDemo = function () {
 
 	// Draw the triangle
 	gl.drawArrays(gl.TRIANGLES, 0, 3);
-};
