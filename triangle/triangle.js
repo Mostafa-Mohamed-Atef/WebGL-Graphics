@@ -40,7 +40,7 @@ void main() {
 
 	// Define triangle vertices with position (x, y) and color (r, g, b)
 	var triangleVertices = new Float32Array([
-		0.0, 0.5,   1.0, 1.0, 0.0,
+		0.0, 0.5,   0.0, 0.0, 0.0,
 		-0.5, -0.5, 0.7, 0.0, 1.0,
 		0.5, -0.5,  0.1, 1.0, 0.6
 	]);
