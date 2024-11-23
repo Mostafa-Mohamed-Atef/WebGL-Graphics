@@ -22,6 +22,11 @@ function compileShader(gl, source, type) {
   const shader = gl.createShader(type);
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+    return null;
+  }
   return shader;
 }
 
@@ -35,24 +40,32 @@ const program = gl.createProgram();
 gl.attachShader(program, vertexShader);
 gl.attachShader(program, fragmentShader);
 gl.linkProgram(program);
+if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+  console.error(gl.getProgramInfoLog(program));
+}
 gl.useProgram(program);
 
+// Define the vertices for the octagon split into two halves
 const vertices = new Float32Array([
-  // First half of the octagon (Red)
-  0.0, 1.0, 1.0, 0.0, 0.0,
-  0.71, 0.71, 1.0, 0.0, 0.0,
-  1.0, 0.0, 1.0, 0.0, 0.0,
-  0.71, -0.71, 1.0, 0.0, 0.0,
-  0.0, -1.0, 1.0, 0.0, 0.0,
-  -0.71, -0.71, 1.0, 0.0, 0.0,
+  // Center point
+  0.0, 0.0, 1.0, 0.0, 0.0, // Red center
+  
+  // First half (Red)
+  0.0, 1.0, 1.0, 0.0, 0.0, // Top
+  0.71, 0.71, 1.0, 0.0, 0.0, // Top-right
+  1.0, 0.0, 1.0, 0.0, 0.0, // Right
+  0.71, -0.71, 1.0, 0.0, 0.0, // Bottom-right
+  0.0, -1.0, 1.0, 0.0, 0.0, // Bottom
 
-  // Second half of the octagon (Blue)
-  -1.0, 0.0, 0.0, 0.0, 1.0,
-  -0.71, 0.71, 0.0, 0.0, 1.0,
-  0.0, 1.0, 0.0, 0.0, 1.0,
-  0.71, 0.71, 0.0, 0.0, 1.0,
-  1.0, 0.0, 0.0, 0.0, 1.0,
-  0.71, -0.71, 0.0, 0.0, 1.0
+  // Center point (again for continuity)
+  0.0, 0.0, 0.0, 0.0, 1.0, // Blue center
+
+  // Second half (Blue)
+  0.0, -1.0, 0.0, 0.0, 1.0, // Bottom
+  -0.71, -0.71, 0.0, 0.0, 1.0, // Bottom-left
+  -1.0, 0.0, 0.0, 0.0, 1.0, // Left
+  -0.71, 0.71, 0.0, 0.0, 1.0, // Top-left
+  0.0, 1.0, 0.0, 0.0, 1.0, // Top
 ]);
 
 const buffer = gl.createBuffer();
@@ -72,5 +85,6 @@ gl.enableVertexAttribArray(aColor);
 gl.clearColor(0.0, 0.0, 0.0, 1.0);
 gl.clear(gl.COLOR_BUFFER_BIT);
 
-// Draw the octagon
-gl.drawArrays(gl.TRIANGLE_FAN, 0, 12);
+// Draw the two halves of the octagon
+gl.drawArrays(gl.TRIANGLE_FAN, 0, 6); // Red half
+gl.drawArrays(gl.TRIANGLE_FAN, 6, 6); // Blue half
