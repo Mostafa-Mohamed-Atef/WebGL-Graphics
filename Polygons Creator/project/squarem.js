@@ -7,16 +7,18 @@ var index = 0;
 var polygonStartIndices = [];
 var redraw = false;
 
-var colors = [
-    vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
-    vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
-    vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
-    vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
-    vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-    vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-    vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
-];
+function getColor(){
+   var menu = document.getElementById('menu')
+   var color = menu.value
+   if (color == 'black'){
+      return vec4(0,0,0,1);
+   }
+   else if(color == 'red'){
+      return vec4(1,0,0,1)
+   }
+}
 
+var color = getColor()
 window.onload = function init() {
     canvas = document.getElementById( "gl-canvas" );
 
@@ -32,7 +34,7 @@ window.onload = function init() {
       gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));// rather than creating a new buffer each time we can update the existed buffer x,y 4 bytes 
   
       gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-      t = vec4(colors[(index)%7]); // index = 1
+      t = vec4(color);
       gl.bufferSubData(gl.ARRAY_BUFFER, 16*index, flatten(t));
       index++;
     }});

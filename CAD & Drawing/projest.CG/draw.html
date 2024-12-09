@@ -1,49 +1,46 @@
 <!DOCTYPE html>
 <html>
-
-
+<head>
 <script id="vertex-shader" type="x-shader/x-vertex">
-
 attribute vec4 vPosition;
-attribute vec4 vColor;
-
-varying vec4 fColor;
-
-void
-main()
-{
+attribute vec3 vColor;
+varying vec3 fColor;
+void main() {
     gl_Position = vPosition;
     fColor = vColor;
-    gl_PointSize = 4.0;
 }
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
-
 precision mediump float;
-
-varying vec4 fColor;
-
-void
-main()
-{
-    gl_FragColor = fColor;
+varying vec3 fColor;
+void main() {
+    gl_FragColor = vec4(fColor, 1.0);
 }
 </script>
 
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
-<script type="text/javascript" src="squarem.js"></script>
+<script type="text/javascript" src="draw.js">
+</script>
+</head>
 
 <body>
 <canvas id="gl-canvas" width="512" height="512">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
-<select>
-    <option value="black">black</option>
-    <option value="red">red</option>
+<select name="colorList" id="colorList">
+    <option value="Black">Black</option>
+    <option value="Red">Red</option>
+    <option value="Yellow">Yellow</option>
+    <option value="Green">Green</option>
+    <option value="Blue">Blue</option>
+    <option value="Magenta">Magenta</option>
+    <option value="Cyan">Cyan</option>
 </select>
-<button id="drawPolygon">Draw</button>
+<button id="button">
+    draw
+</button>
 </body>
 </html>
