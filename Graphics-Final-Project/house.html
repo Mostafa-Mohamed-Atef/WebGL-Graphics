@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Canvas Landscape with Integrated JS</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+      /* Button Styles */
+      #themeButton,
+      #moveCarButton,
+      #movePersonButton {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1;
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+      /* Position the new buttons */
+      #moveCarButton {
+        left: 150px;
+      }
+      #movePersonButton {
+        left: 290px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <button id="themeButton">Switch to Night</button>
+    <!-- New Buttons to Control Movement -->
+    <button id="moveCarButton">Move Car</button>
+    <button id="movePersonButton">Move Person</button>
+    <!-- Canvas Element -->
+    <canvas id="canvas"></canvas>
+
+    <script src="script.js"></script>
+  </body>
+</html>
