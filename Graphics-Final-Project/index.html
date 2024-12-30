@@ -69,42 +69,36 @@
             const shapes = {
                 ground: {
                     positions: [
-                        // Main road (dark gray)
+                        // Main road (4 vertices)
                         -1.0, -0.4, 0.0,
                         1.0, -0.4, 0.0,
                         1.0, -1.0, 0.0,
                         -1.0, -1.0, 0.0,
                         
-                        // Center line (white dashed line) - first dash
+                        // First dash (4 vertices)
                         -0.3, -0.68, 0.0,
                         0.0, -0.68, 0.0,
                         0.0, -0.72, 0.0,
                         -0.3, -0.72, 0.0,
                         
-                        // Center line - second dash
+                        // Second dash (4 vertices)
                         0.3, -0.68, 0.0,
                         0.6, -0.68, 0.0,
                         0.6, -0.72, 0.0,
                         0.3, -0.72, 0.0,
                         
-                        // Center line - third dash
+                        // Third dash (4 vertices)
                         -0.9, -0.68, 0.0,
                         -0.6, -0.68, 0.0,
                         -0.6, -0.72, 0.0,
                         -0.9, -0.72, 0.0
                     ],
                     colors: [
-                        // Road color (consistent dark gray)
+                        // Main road colors (dark gray)
                         0.3, 0.3, 0.3, 1.0,
                         0.3, 0.3, 0.3, 1.0,
                         0.3, 0.3, 0.3, 1.0,
                         0.3, 0.3, 0.3, 1.0,
-                        
-                        // Lane markings (pure white)
-                        1.0, 1.0, 1.0, 1.0,
-                        1.0, 1.0, 1.0, 1.0,
-                        1.0, 1.0, 1.0, 1.0,
-                        1.0, 1.0, 1.0, 1.0,
                         
                         // First dash colors (white)
                         1.0, 1.0, 1.0, 1.0,
@@ -127,76 +121,114 @@
                 },
                 sky: {
                     positions: [
-                        -1.0, 1.0, 0.0,
-                        1.0, 1.0, 0.0,
-                        1.0, -0.4, 0.0,
-                        -1.0, -0.4, 0.0
+                        -1.0, 1.0, 0.0,    // top left
+                        1.0, 1.0, 0.0,     // top right
+                        1.0, -0.4, 0.0,    // bottom right
+                        -1.0, -0.4, 0.0    // bottom left
                     ],
                     colors: [
-                        0.529, 0.808, 0.922, 1.0,  // Light blue
-                        0.529, 0.808, 0.922, 1.0,
-                        0.529, 0.808, 0.922, 1.0,
-                        0.529, 0.808, 0.922, 1.0
+                        0.329, 0.608, 0.922, 1.0,  // Darker blue at edges
+                        0.329, 0.608, 0.922, 1.0,
+                        0.729, 0.808, 0.922, 1.0,  // Lighter blue near horizon
+                        0.729, 0.808, 0.922, 1.0
                     ]
                 },
                 house: {
                     positions: [
-                        // House base (rectangle) - drawn as a TRIANGLE_FAN
+                        // House base (4 vertices)
                         -0.15, -0.4, 0.0,  // bottom left
                         0.15, -0.4, 0.0,   // bottom right
                         0.15, -0.1, 0.0,   // top right
                         -0.15, -0.1, 0.0,  // top left
                         
-                        // Roof (triangle) - drawn as a TRIANGLE_FAN
-                        -0.15, -0.1, 0.0,  // left point (aligned with house)
+                        // Roof (3 vertices)
+                        -0.15, -0.1, 0.0,  // left point
+                        0.15, -0.1, 0.0,   // right point
                         0.0, 0.1, 0.0,     // top point
-                        0.15, -0.1, 0.0    // right point (aligned with house)
+                        
+                        // Left window (4 vertices)
+                        -0.1, -0.25, 0.0,  // bottom left
+                        -0.05, -0.25, 0.0, // bottom right
+                        -0.05, -0.2, 0.0,  // top right
+                        -0.1, -0.2, 0.0,   // top left
+                        
+                        // Right window (4 vertices)
+                        0.05, -0.25, 0.0,  // bottom left
+                        0.1, -0.25, 0.0,   // bottom right
+                        0.1, -0.2, 0.0,    // top right
+                        0.05, -0.2, 0.0,   // top left
+                        
+                        // Door (4 vertices)
+                        -0.03, -0.4, 0.0,  // bottom left
+                        0.03, -0.4, 0.0,   // bottom right
+                        0.03, -0.3, 0.0,   // top right
+                        -0.03, -0.3, 0.0   // top left
                     ],
                     colors: [
-                        // House base (solid brown)
+                        // House base colors (4 vertices - brown)
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         
-                        // Roof (solid red)
+                        // Roof colors (3 vertices - red)
                         0.8, 0.0, 0.0, 1.0,
                         0.8, 0.0, 0.0, 1.0,
-                        0.8, 0.0, 0.0, 1.0
+                        0.8, 0.0, 0.0, 1.0,
+                        
+                        // Left window colors (4 vertices - light blue)
+                        0.7, 0.8, 1.0, 1.0,
+                        0.7, 0.8, 1.0, 1.0,
+                        0.7, 0.8, 1.0, 1.0,
+                        0.7, 0.8, 1.0, 1.0,
+                        
+                        // Right window colors (4 vertices - light blue)
+                        0.7, 0.8, 1.0, 1.0,
+                        0.7, 0.8, 1.0, 1.0,
+                        0.7, 0.8, 1.0, 1.0,
+                        0.7, 0.8, 1.0, 1.0,
+                        
+                        // Door colors (4 vertices - dark brown)
+                        0.36, 0.25, 0.20, 1.0,
+                        0.36, 0.25, 0.20, 1.0,
+                        0.36, 0.25, 0.20, 1.0,
+                        0.36, 0.25, 0.20, 1.0
                     ]
                 },
                 tree: {
                     positions: [
-                        // Trunk (rectangle)
+                        // Tree trunk (4 vertices)
                         -0.05, -0.4, 0.0,  // bottom left
                         0.05, -0.4, 0.0,   // bottom right
                         0.05, -0.2, 0.0,   // top right
                         -0.05, -0.2, 0.0,  // top left
                         
-                        // Tree foliage (triangles)
+                        // First layer of foliage (3 vertices)
                         -0.15, -0.2, 0.0,  // bottom left
                         0.15, -0.2, 0.0,   // bottom right
                         0.0, 0.1, 0.0,     // top point
                         
-                        // Second layer of foliage (slightly higher triangle)
-                        -0.12, -0.1, 0.0,  // second layer left
-                        0.12, -0.1, 0.0,   // second layer right
-                        0.0, 0.2, 0.0      // second layer top
+                        // Second layer of foliage (3 vertices)
+                        -0.12, -0.1, 0.0,  // left
+                        0.12, -0.1, 0.0,   // right
+                        0.0, 0.2, 0.0      // top
                     ],
                     colors: [
-                        // Trunk (solid brown)
+                        // Tree trunk colors (brown)
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         
-                        // All foliage same solid green
+                        // First layer foliage colors (green)
                         0.0, 0.502, 0.0, 1.0,
                         0.0, 0.502, 0.0, 1.0,
                         0.0, 0.502, 0.0, 1.0,
-                        0.0, 0.502, 0.0, 1.0,
-                        0.0, 0.502, 0.0, 1.0,
-                        0.0, 0.502, 0.0, 1.0
+                        
+                        // Second layer foliage colors (slightly darker green)
+                        0.0, 0.452, 0.0, 1.0,
+                        0.0, 0.452, 0.0, 1.0,
+                        0.0, 0.452, 0.0, 1.0
                     ]
                 },
                 car: {
@@ -368,6 +400,36 @@
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0
                     ]
+                },
+                sun: {
+                    positions: [
+                        // Center point
+                        0.7, 0.7, 0.0,
+                        // Circle points (12 vertices for a smoother circle)
+                        0.8, 0.7, 0.0,
+                        0.775, 0.775, 0.0,
+                        0.7, 0.8, 0.0,
+                        0.625, 0.775, 0.0,
+                        0.6, 0.7, 0.0,
+                        0.625, 0.625, 0.0,
+                        0.7, 0.6, 0.0,
+                        0.775, 0.625, 0.0,
+                        0.8, 0.7, 0.0  // Repeat first point to close the circle
+                    ],
+                    colors: [
+                        // Center color (bright yellow for sun)
+                        1.0, 1.0, 0.0, 1.0,
+                        // Outer colors
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0,
+                        1.0, 1.0, 0.0, 1.0
+                    ]
                 }
             };
 
@@ -460,6 +522,32 @@
                 // Draw wheels
                 gl.drawArrays(gl.TRIANGLE_FAN, 8, 9);  // front wheel
                 gl.drawArrays(gl.TRIANGLE_FAN, 17, 9); // back wheel
+            } else if (shape === 'house') {
+                // Draw house base
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // base rectangle
+                // Draw roof
+                gl.drawArrays(gl.TRIANGLE_FAN, 4, 3);  // roof triangle
+                // Draw windows
+                gl.drawArrays(gl.TRIANGLE_FAN, 7, 4);  // left window
+                gl.drawArrays(gl.TRIANGLE_FAN, 11, 4); // right window
+                // Draw door
+                gl.drawArrays(gl.TRIANGLE_FAN, 15, 4); // door
+            } else if (shape === 'ground') {
+                // Draw main road
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // road base
+                // Draw the three dashes
+                gl.drawArrays(gl.TRIANGLE_FAN, 4, 4);   // first dash
+                gl.drawArrays(gl.TRIANGLE_FAN, 8, 4);   // second dash
+                gl.drawArrays(gl.TRIANGLE_FAN, 12, 4);  // third dash
+            } else if (shape === 'tree') {
+                // Draw trunk
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // trunk rectangle
+                // Draw foliage layers
+                gl.drawArrays(gl.TRIANGLE_FAN, 4, 3);  // first layer triangle
+                gl.drawArrays(gl.TRIANGLE_FAN, 7, 3);  // second layer triangle
+            } else if (shape === 'sun') {
+                // Draw sun/moon as a triangle fan
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 10);
             } else {
                 // Draw other shapes as single triangle fans
                 gl.drawArrays(gl.TRIANGLE_FAN, 0, shapeBuffers.vertexCount);
@@ -489,6 +577,7 @@
 
             // Draw background elements
             drawShape(gl, programInfo, buffers, 'sky');
+            drawShape(gl, programInfo, buffers, 'sun');
             drawShape(gl, programInfo, buffers, 'ground');
 
             // Draw static elements
@@ -547,6 +636,15 @@
                 // Update the sky buffer with new colors
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sky.color);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skyColors), gl.STATIC_DRAW);
+
+                // Update sun/moon colors
+                const celestialColors = isNight ?
+                    new Array(10).fill([0.9, 0.9, 0.9, 1.0]).flat() : // White/gray for moon
+                    new Array(10).fill([1.0, 1.0, 0.0, 1.0]).flat();  // Yellow for sun
+                
+                // Update the sun/moon buffer with new colors
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sun.color);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(celestialColors), gl.STATIC_DRAW);
             });
 
             // Handle window resize
