@@ -24,23 +24,18 @@
 <body>
     <button id="themeButton">Switch to Night</button>
     <canvas id="canvas"></canvas>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
     <script>
         // Vertex shader program
         const vsSource = `
             attribute vec4 aVertexPosition;
             attribute vec4 aVertexColor;
-            
-            uniform mat4 uModelViewMatrix;
-            uniform mat4 uProjectionMatrix;
             uniform vec2 uOffset;
-            
             varying lowp vec4 vColor;
             
             void main() {
                 vec4 position = aVertexPosition;
                 position.xy += uOffset;
-                gl_Position = uProjectionMatrix * uModelViewMatrix * position;
+                gl_Position = position;
                 vColor = aVertexColor;
             }
         `;
@@ -558,22 +553,7 @@
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            const projectionMatrix = mat4.create();
-            const modelViewMatrix = mat4.create();
-            mat4.ortho(projectionMatrix, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-
             gl.useProgram(programInfo.program);
-
-            gl.uniformMatrix4fv(
-                programInfo.uniformLocations.projectionMatrix,
-                false,
-                projectionMatrix
-            );
-            gl.uniformMatrix4fv(
-                programInfo.uniformLocations.modelViewMatrix,
-                false,
-                modelViewMatrix
-            );
 
             // Draw background elements (back to front)
             drawShape(gl, programInfo, buffers, 'sky');
@@ -584,9 +564,9 @@
             drawShape(gl, programInfo, buffers, 'tree', [0.4, 0]);
             drawShape(gl, programInfo, buffers, 'house', [-0.3, 0]);
 
-            // Draw moving elements (bus first, then car)
-            drawShape(gl, programInfo, buffers, 'bus', [personPosition, 0]);  // Draw bus first
-            drawShape(gl, programInfo, buffers, 'car', [carPosition, 0]);     // Draw car last so it appears on top
+            // Draw moving elements
+            drawShape(gl, programInfo, buffers, 'bus', [personPosition, 0]);
+            drawShape(gl, programInfo, buffers, 'car', [carPosition, 0]);
 
             // Update animation
             carPosition += 0.01;
@@ -613,8 +593,6 @@
                     vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
                 },
                 uniformLocations: {
-                    projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-                    modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
                     offset: gl.getUniformLocation(shaderProgram, 'uOffset'),
                 },
             };
