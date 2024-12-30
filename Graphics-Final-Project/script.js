@@ -1,266 +1,185 @@
-// Get the canvas and context
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-// Set canvas size to full window
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// Variables for theme and positions
+let gl;
+let program;
+let carPosition = -0.5;
+let carDirection = 1;
+let sunOffset = 0;
+let sunDirection = 1;
 let isNight = false;
-let carPosition = -100;
-let personPosition = canvas.width + 50;
-let angle = 0;
 
-// Function to draw the scene
-function drawScene() {
-  // Clear the canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function initGL() {
+    const canvas = document.getElementById('glCanvas');
+    gl = canvas.getContext('webgl');
 
-  // Draw the sky
-  drawSky();
+    if (!gl) {
+        console.error('WebGL not supported');
+        return;
+    }
 
-  // Draw the sun or moon
-  drawSunOrMoon();
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
 
-  // Draw the ground
-  drawGround();
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-  // Draw the house
-  drawHouse();
+    program = createProgram(gl, vertexShader, fragmentShader);
+    gl.useProgram(program);
 
-  // Draw the tree
-  drawTree();
-
-  // Draw the windmill
-  drawWindmill();
-
-  // Draw the car
-  drawCar();
-
-  // Draw the person
-  drawPerson();
-
-  // Update angle for rotation (if any)
-  angle += 0.05;
-
-  // Request the next frame
-  requestAnimationFrame(drawScene);
+    canvas.addEventListener('click', handleCanvasClick);
 }
 
-// Function to draw the sky with gradient
-function drawSky() {
-  let skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.5);
+function handleCanvasClick(event) {
+    const canvas = event.target;
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / canvas.width * 2 - 1;
+    const y = -(event.clientY - rect.top) / canvas.height * 2 + 1;
 
-  if (isNight) {
-    skyGradient.addColorStop(0, "#000033");
-    skyGradient.addColorStop(1, "#000066");
-  } else {
-    skyGradient.addColorStop(0, "#87CEEB");
-    skyGradient.addColorStop(1, "#87CEFA");
-  }
-
-  ctx.fillStyle = skyGradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Check if the click is within the sun/moon
+    if (Math.sqrt((x + 0.8) ** 2 + (y - 0.8) ** 2) <= 0.1) {
+        isNight = !isNight;
+    }
 }
 
-// Function to draw the sun or moon
-function drawSunOrMoon() {
-  ctx.save();
-  if (isNight) {
-    ctx.fillStyle = "#FFFFE0";
-  } else {
-    ctx.fillStyle = "#FFD700";
-  }
-  ctx.beginPath();
-  ctx.arc(canvas.width - 100, 100, 50, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.restore();
+function draw() {
+    const skyColor = isNight ? [0.1, 0.1, 0.3, 1.0] : [0.529, 0.808, 0.922, 1.0];
+    gl.clearColor(...skyColor);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    drawSun();
+    drawLandscape();
+    drawTree();
+    drawHouse();
+    drawRoad();
+    drawCar();
+
+    carPosition += 0.005 * carDirection;
+    if (carPosition > 0.5 || carPosition < -0.5) {
+        carDirection *= -1;
+    }
+
+    sunOffset += 0.001 * sunDirection;
+    if (sunOffset > 0.05 || sunOffset < -0.05) {
+        sunDirection *= -1;
+    }
+
+    requestAnimationFrame(draw);
 }
 
-// Function to draw the ground
-function drawGround() {
-  ctx.fillStyle = "#228B22";
-  ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+function drawSun() {
+    const segments = 32;
+    const radius = 0.1;
+    const centerX = -0.8;
+    const centerY = 0.8 + sunOffset;
+    const sunVertices = [];
+
+    for (let i = 0; i <= segments; i++) {
+        const theta = (i / segments) * Math.PI * 2;
+        const x = centerX + radius * Math.cos(theta);
+        const y = centerY + radius * Math.sin(theta);
+        sunVertices.push(x, y);
+    }
+
+    const color = isNight ? [0.9, 0.9, 0.9, 1.0] : [1.0, 1.0, 0.0, 1.0];
+    drawShape(new Float32Array(sunVertices), color, false);
 }
 
-// Function to draw the house
-function drawHouse() {
-  ctx.save();
-  // House base
-  ctx.fillStyle = "#8B4513";
-  ctx.fillRect(100, canvas.height * 0.5, 200, 200);
-
-  // Roof
-  ctx.beginPath();
-  ctx.moveTo(80, canvas.height * 0.5);
-  ctx.lineTo(200, canvas.height * 0.35);
-  ctx.lineTo(320, canvas.height * 0.5);
-  ctx.closePath();
-  ctx.fillStyle = "#A52A2A";
-  ctx.fill();
-
-  // Windows
-  ctx.fillStyle = isNight ? "#FFFFE0" : "#FFFACD";
-  ctx.fillRect(130, canvas.height * 0.6, 50, 50);
-  ctx.fillRect(220, canvas.height * 0.6, 50, 50);
-
-  // Door
-  ctx.fillStyle = "#654321";
-  ctx.fillRect(190, canvas.height * 0.65, 40, 85);
-  ctx.restore();
+function drawLandscape() {
+    const landscapeVertices = new Float32Array([
+        -1.0, -0.2,
+        1.0, -0.2,
+        1.0, -1.0,
+        -1.0, -1.0
+    ]);
+    const color = isNight ? [0.05, 0.2, 0.05, 1.0] : [0.133, 0.545, 0.133, 1.0];
+    drawShape(landscapeVertices, color, false);
 }
 
-// Function to draw the tree
 function drawTree() {
-  ctx.save();
+    const trunkVertices = new Float32Array([
+        -0.05, -0.2,
+        0.05, -0.2,
+        0.05, -0.5,
+        -0.05, -0.5
+    ]);
+    const trunkColor = isNight ? [0.2, 0.1, 0.03, 1.0] : [0.545, 0.271, 0.075, 1.0];
+    drawShape(trunkVertices, trunkColor, false);
 
-  // Trunk
-  ctx.fillStyle = "#8B4513";
-  ctx.fillRect(500, canvas.height * 0.6, 30, 100);
-
-  // Leaves (3D effect with gradient)
-  let leafGradient = ctx.createRadialGradient(
-    515,
-    canvas.height * 0.6,
-    10,
-    515,
-    canvas.height * 0.6 - 50,
-    70
-  );
-  leafGradient.addColorStop(0, "#006400");
-  leafGradient.addColorStop(1, "#00FF00");
-  ctx.fillStyle = leafGradient;
-
-  ctx.beginPath();
-  ctx.arc(515, canvas.height * 0.6 - 50, 70, 0, 2 * Math.PI);
-  ctx.fill();
-
-  ctx.restore();
+    const leavesVertices = new Float32Array([
+        0.0, 0.1,
+        -0.2, -0.2,
+        0.2, -0.2
+    ]);
+    const leavesColor = isNight ? [0.1, 0.35, 0.2, 1.0] : [0.1, 0.35, 0.2, 1.0];
+    drawShape(leavesVertices, leavesColor, false);
 }
 
-// Function to draw a windmill
-function drawWindmill() {
-  ctx.save();
-  ctx.translate(700, canvas.height * 0.5);
+function drawHouse() {
+    const houseVertices = new Float32Array([
+        0.3, 0.1,
+        0.7, 0.1,
+        0.7, -0.3,
+        0.3, -0.3
+    ]);
+    const houseColor1 = isNight ? [0.2, 0.05, 0.05, 1.0] : [0.698, 0.133, 0.133, 1.0];
+    const houseColor2 = isNight ? [0.3, 0.1, 0.1, 1.0] : [0.933, 0.51, 0.51, 1.0];
+    drawShape(houseVertices, houseColor1, true, houseColor1, houseColor2);
 
-  // Windmill base
-  ctx.fillStyle = "#D3D3D3";
-  ctx.fillRect(-10, 0, 20, 100);
-
-  // Rotating blades
-  ctx.save();
-  ctx.rotate(angle);
-  ctx.fillStyle = "#FFFFFF";
-
-  for (let i = 0; i < 4; i++) {
-    ctx.rotate(Math.PI / 2);
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, -50);
-    ctx.lineTo(10, -40);
-    ctx.lineTo(0, -60);
-    ctx.lineTo(-10, -40);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.restore();
-  ctx.restore();
+    const roofVertices = new Float32Array([
+        0.3, 0.1,
+        0.5, 0.3,
+        0.7, 0.1
+    ]);
+    const roofColor = isNight ? [0.2, 0.1, 0.03, 1.0] : [0.545, 0.271, 0.075, 1.0];
+    drawShape(roofVertices, roofColor, false);
 }
 
-// Function to draw the car
+function drawRoad() {
+    const roadVertices = new Float32Array([
+        -1.0, -0.6,
+        1.0, -0.6,
+        1.0, -0.8,
+        -1.0, -0.8
+    ]);
+    const roadColor = isNight ? [0.2, 0.2, 0.2, 1.0] : [0.5, 0.5, 0.5, 1.0];
+    drawShape(roadVertices, roadColor, false);
+}
+
 function drawCar() {
-  ctx.save();
-  ctx.translate(carPosition, canvas.height * 0.75);
-
-  // Car body
-  ctx.fillStyle = "#FF0000";
-  ctx.fillRect(0, -30, 80, 30);
-
-  // Car roof
-  ctx.beginPath();
-  ctx.moveTo(20, -30);
-  ctx.lineTo(30, -50);
-  ctx.lineTo(60, -50);
-  ctx.lineTo(70, -30);
-  ctx.closePath();
-  ctx.fill();
-
-  // Wheels
-  ctx.fillStyle = "#000000";
-
-  // Front wheel
-  ctx.beginPath();
-  ctx.arc(20, 0, 10, 0, 2 * Math.PI);
-  ctx.fill();
-
-  // Rear wheel
-  ctx.beginPath();
-  ctx.arc(60, 0, 10, 0, 2 * Math.PI);
-  ctx.fill();
-
-  ctx.restore();
+    const carVertices = new Float32Array([
+        carPosition - 0.1, -0.65,
+        carPosition + 0.1, -0.65,
+        carPosition + 0.1, -0.75,
+        carPosition - 0.1, -0.75
+    ]);
+    drawShape(carVertices, [1.0, 0.0, 0.0, 1.0], false);
 }
 
-// Function to draw the person
-function drawPerson() {
-  ctx.save();
-  ctx.translate(personPosition, canvas.height * 0.75);
+function drawShape(vertices, color, useGradient, gradientColor1, gradientColor2) {
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-  // Head
-  ctx.fillStyle = "#FFDAB9";
-  ctx.beginPath();
-  ctx.arc(0, -50, 10, 0, 2 * Math.PI);
-  ctx.fill();
+    const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-  // Body
-  ctx.fillStyle = "#0000CD";
-  ctx.fillRect(-5, -50, 10, 30);
+    const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
+    gl.uniform4fv(colorUniformLocation, color);
 
-  // Arms
-  ctx.strokeStyle = "#FFDAB9";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(-5, -40);
-  ctx.lineTo(-20, -30);
-  ctx.moveTo(5, -40);
-  ctx.lineTo(20, -30);
-  ctx.stroke();
+    const useGradientLocation = gl.getUniformLocation(program, 'u_useGradient');
+    gl.uniform1i(useGradientLocation, useGradient);
 
-  // Legs
-  ctx.beginPath();
-  ctx.moveTo(-5, -20);
-  ctx.lineTo(-10, 0);
-  ctx.moveTo(5, -20);
-  ctx.lineTo(10, 0);
-  ctx.stroke();
+    if (useGradient) {
+        const gradientColor1Location = gl.getUniformLocation(program, 'u_gradientColor1');
+        const gradientColor2Location = gl.getUniformLocation(program, 'u_gradientColor2');
+        gl.uniform4fv(gradientColor1Location, gradientColor1);
+        gl.uniform4fv(gradientColor2Location, gradientColor2);
+    }
 
-  ctx.restore();
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices.length / 2);
 }
 
-// Event listener for the theme button
-document.getElementById("themeButton").addEventListener("click", () => {
-  isNight = !isNight;
-  document.getElementById("themeButton").textContent = isNight
-    ? "Switch to Day"
-    : "Switch to Night";
-});
-
-// Event listener for the "Move Car" button
-document.getElementById("moveCarButton").addEventListener("click", () => {
-  carPosition += 10; // Move the car right by 10 pixels
-  if (carPosition > canvas.width + 100) {
-    carPosition = -100; // Reset position if it goes off-screen
-  }
-});
-
-// Event listener for the "Move Person" button
-document.getElementById("movePersonButton").addEventListener("click", () => {
-  personPosition -= 10; // Move the person left by 10 pixels
-  if (personPosition < -50) {
-    personPosition = canvas.width + 50; // Reset position if it goes off-screen
-  }
-});
-
-// Start the drawing loop
-drawScene();
+window.onload = function() {
+    initGL();
+    draw();
+};

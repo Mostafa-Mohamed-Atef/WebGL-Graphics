@@ -11,9 +11,7 @@
         canvas {
             display: block;
         }
-        #themeButton,
-        #moveCarButton,
-        #movePersonButton {
+        #themeButton {
             position: absolute;
             top: 10px;
             left: 10px;
@@ -21,18 +19,10 @@
             padding: 10px 20px;
             font-size: 16px;
         }
-        #moveCarButton {
-            left: 150px;
-        }
-        #movePersonButton {
-            left: 290px;
-        }
     </style>
 </head>
 <body>
     <button id="themeButton">Switch to Night</button>
-    <button id="moveCarButton">Move Car</button>
-    <button id="movePersonButton">Move Person</button>
     <canvas id="canvas"></canvas>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
     <script>
@@ -68,11 +58,6 @@
         // Initialize WebGL context
         const canvas = document.getElementById('canvas');
         const gl = canvas.getContext('webgl');
-
-        if (!gl) {
-            alert('Unable to initialize WebGL. Your browser may not support it.');
-        }
-
         // Scene state
         let isNight = false;
         let carPosition = -1.0;
@@ -84,12 +69,61 @@
             const shapes = {
                 ground: {
                     positions: [
+                        // Main road (dark gray)
                         -1.0, -0.4, 0.0,
                         1.0, -0.4, 0.0,
                         1.0, -1.0, 0.0,
-                        -1.0, -1.0, 0.0
+                        -1.0, -1.0, 0.0,
+                        
+                        // Center line (white dashed line) - first dash
+                        -0.3, -0.68, 0.0,
+                        0.0, -0.68, 0.0,
+                        0.0, -0.72, 0.0,
+                        -0.3, -0.72, 0.0,
+                        
+                        // Center line - second dash
+                        0.3, -0.68, 0.0,
+                        0.6, -0.68, 0.0,
+                        0.6, -0.72, 0.0,
+                        0.3, -0.72, 0.0,
+                        
+                        // Center line - third dash
+                        -0.9, -0.68, 0.0,
+                        -0.6, -0.68, 0.0,
+                        -0.6, -0.72, 0.0,
+                        -0.9, -0.72, 0.0
                     ],
-                    colors: new Array(4).fill([0.133, 0.545, 0.133, 1.0]).flat()
+                    colors: [
+                        // Road color (consistent dark gray)
+                        0.3, 0.3, 0.3, 1.0,
+                        0.3, 0.3, 0.3, 1.0,
+                        0.3, 0.3, 0.3, 1.0,
+                        0.3, 0.3, 0.3, 1.0,
+                        
+                        // Lane markings (pure white)
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        
+                        // First dash colors (white)
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        
+                        // Second dash colors (white)
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        
+                        // Third dash colors (white)
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 1.0
+                    ]
                 },
                 sky: {
                     positions: [
@@ -98,7 +132,12 @@
                         1.0, -0.4, 0.0,
                         -1.0, -0.4, 0.0
                     ],
-                    colors: new Array(4).fill(isNight ? [0.0, 0.0, 0.2, 1.0] : [0.529, 0.808, 0.922, 1.0]).flat()
+                    colors: [
+                        0.529, 0.808, 0.922, 1.0,  // Light blue
+                        0.529, 0.808, 0.922, 1.0,
+                        0.529, 0.808, 0.922, 1.0,
+                        0.529, 0.808, 0.922, 1.0
+                    ]
                 },
                 house: {
                     positions: [
@@ -114,16 +153,16 @@
                         0.15, -0.1, 0.0    // right point (aligned with house)
                     ],
                     colors: [
-                        // House base colors (brown)
+                        // House base (solid brown)
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         
-                        // Roof colors (dark red)
-                        0.647, 0.165, 0.165, 1.0,
-                        0.647, 0.165, 0.165, 1.0,
-                        0.647, 0.165, 0.165, 1.0
+                        // Roof (solid red)
+                        0.8, 0.0, 0.0, 1.0,
+                        0.8, 0.0, 0.0, 1.0,
+                        0.8, 0.0, 0.0, 1.0
                     ]
                 },
                 tree: {
@@ -145,36 +184,36 @@
                         0.0, 0.2, 0.0      // second layer top
                     ],
                     colors: [
-                        // Trunk colors (brown)
+                        // Trunk (solid brown)
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         
-                        // First foliage layer colors (dark green)
-                        0.0, 0.392, 0.0, 1.0,
-                        0.0, 0.392, 0.0, 1.0,
+                        // All foliage same solid green
                         0.0, 0.502, 0.0, 1.0,
-                        
-                        // Second foliage layer colors (slightly lighter green)
-                        0.0, 0.452, 0.0, 1.0,
-                        0.0, 0.452, 0.0, 1.0,
-                        0.0, 0.552, 0.0, 1.0
+                        0.0, 0.502, 0.0, 1.0,
+                        0.0, 0.502, 0.0, 1.0,
+                        0.0, 0.502, 0.0, 1.0,
+                        0.0, 0.502, 0.0, 1.0,
+                        0.0, 0.502, 0.0, 1.0
                     ]
                 },
                 car: {
                     positions: [
-                        // Car body
+                        // Car body (4 vertices)
                         0.0, -0.45, 0.0,
                         0.2, -0.45, 0.0,
                         0.2, -0.55, 0.0,
                         0.0, -0.55, 0.0,
-                        // Car roof
+                        
+                        // Car roof (4 vertices)
                         0.05, -0.45, 0.0,
                         0.15, -0.45, 0.0,
                         0.13, -0.4, 0.0,
                         0.07, -0.4, 0.0,
-                        // Front wheel (approximated circle using 8 points)
+                        
+                        // Front wheel (9 vertices)
                         0.05, -0.55, 0.0,  // center
                         0.03, -0.55, 0.0,
                         0.04, -0.53, 0.0,
@@ -184,7 +223,8 @@
                         0.06, -0.57, 0.0,
                         0.05, -0.57, 0.0,
                         0.04, -0.57, 0.0,
-                        // Back wheel (approximated circle using 8 points)
+                        
+                        // Back wheel (9 vertices)
                         0.15, -0.55, 0.0,  // center
                         0.13, -0.55, 0.0,
                         0.14, -0.53, 0.0,
@@ -196,17 +236,19 @@
                         0.14, -0.57, 0.0
                     ],
                     colors: [
-                        // Car body colors (bright red)
+                        // Car body colors (4 vertices)
                         1.0, 0.0, 0.0, 1.0,
                         1.0, 0.0, 0.0, 1.0,
                         1.0, 0.0, 0.0, 1.0,
                         1.0, 0.0, 0.0, 1.0,
-                        // Car roof colors (same bright red as body)
+                        
+                        // Car roof colors (4 vertices)
                         1.0, 0.0, 0.0, 1.0,
                         1.0, 0.0, 0.0, 1.0,
                         1.0, 0.0, 0.0, 1.0,
                         1.0, 0.0, 0.0, 1.0,
-                        // Front wheel colors (black)
+                        
+                        // Front wheel colors (9 vertices)
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
@@ -216,7 +258,8 @@
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
-                        // Back wheel colors (black)
+                        
+                        // Back wheel colors (9 vertices)
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
@@ -256,20 +299,20 @@
                 },
                 bus: {
                     positions: [
-                        // Bus main body (rectangle)
-                        -0.2, -0.45, 0.0,  // bottom left
-                        0.2, -0.45, 0.0,   // bottom right
-                        0.2, -0.25, 0.0,   // top right
-                        -0.2, -0.25, 0.0,  // top left
+                        // Bus main body (4 vertices)
+                        -0.2, -0.45, 0.0,
+                        0.2, -0.45, 0.0,
+                        0.2, -0.25, 0.0,
+                        -0.2, -0.25, 0.0,
                         
-                        // Windows (strip along the body)
+                        // Windows (4 vertices)
                         -0.18, -0.3, 0.0,
                         0.18, -0.3, 0.0,
                         0.18, -0.35, 0.0,
                         -0.18, -0.35, 0.0,
                         
-                        // Front wheel
-                        -0.15, -0.45, 0.0,  // center
+                        // Front wheel (9 vertices)
+                        -0.15, -0.45, 0.0,
                         -0.17, -0.45, 0.0,
                         -0.16, -0.43, 0.0,
                         -0.15, -0.43, 0.0,
@@ -279,8 +322,8 @@
                         -0.15, -0.47, 0.0,
                         -0.16, -0.47, 0.0,
                         
-                        // Back wheel
-                        0.15, -0.45, 0.0,   // center
+                        // Back wheel (9 vertices)
+                        0.15, -0.45, 0.0,
                         0.13, -0.45, 0.0,
                         0.14, -0.43, 0.0,
                         0.15, -0.43, 0.0,
@@ -291,19 +334,19 @@
                         0.14, -0.47, 0.0
                     ],
                     colors: [
-                        // Bus body colors (yellow)
+                        // Bus body colors (4 vertices)
                         1.0, 1.0, 0.0, 1.0,
                         1.0, 1.0, 0.0, 1.0,
                         1.0, 1.0, 0.0, 1.0,
                         1.0, 1.0, 0.0, 1.0,
                         
-                        // Windows colors (light blue)
+                        // Windows colors (4 vertices)
                         0.7, 0.7, 1.0, 1.0,
                         0.7, 0.7, 1.0, 1.0,
                         0.7, 0.7, 1.0, 1.0,
                         0.7, 0.7, 1.0, 1.0,
                         
-                        // Front wheel colors (black)
+                        // Front wheel colors (9 vertices)
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
@@ -314,7 +357,7 @@
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
                         
-                        // Back wheel colors (black)
+                        // Back wheel colors (9 vertices)
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
                         0.1, 0.1, 0.1, 1.0,
@@ -408,7 +451,19 @@
             );
 
             gl.uniform2fv(programInfo.uniformLocations.offset, offset);
-            gl.drawArrays(gl.TRIANGLE_FAN, 0, shapeBuffers.vertexCount);
+
+            // Draw the shape in multiple passes if needed
+            if (shape === 'car' || shape === 'bus') {
+                // Draw body and roof
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // body
+                gl.drawArrays(gl.TRIANGLE_FAN, 4, 4);  // roof
+                // Draw wheels
+                gl.drawArrays(gl.TRIANGLE_FAN, 8, 9);  // front wheel
+                gl.drawArrays(gl.TRIANGLE_FAN, 17, 9); // back wheel
+            } else {
+                // Draw other shapes as single triangle fans
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, shapeBuffers.vertexCount);
+            }
         }
 
         function drawScene(gl, programInfo, buffers) {
@@ -492,22 +547,6 @@
                 // Update the sky buffer with new colors
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sky.color);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skyColors), gl.STATIC_DRAW);
-            });
-
-            // Add car movement button handler
-            document.getElementById('moveCarButton').addEventListener('click', () => {
-                carPosition += 0.1;
-                if (carPosition > 1.4) {
-                    carPosition = -1.4;
-                }
-            });
-
-            // Add person movement button handler
-            document.getElementById('movePersonButton').addEventListener('click', () => {
-                personPosition -= 0.1;
-                if (personPosition < -1.4) {
-                    personPosition = 1.4;
-                }
             });
 
             // Handle window resize
