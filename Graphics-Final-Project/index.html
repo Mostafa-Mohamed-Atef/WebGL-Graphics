@@ -30,12 +30,15 @@
             attribute vec4 aVertexPosition;
             attribute vec4 aVertexColor;
             uniform vec2 uOffset;
+            uniform mat4 uModelViewMatrix;
+            uniform bool uIs3D;
             varying lowp vec4 vColor;
             
             void main() {
                 vec4 position = aVertexPosition;
                 position.xy += uOffset;
-                gl_Position = position;
+                
+                gl_Position = uIs3D ? uModelViewMatrix * position : position;
                 vColor = aVertexColor;
             }
         `;
@@ -56,7 +59,7 @@
         // Scene state
         let isNight = false;
         let carPosition = -1.0;
-        let personPosition = 1.0;
+        let busPosition = 1.0;
         let windmillAngle = 0;
 
         // Function to create shape data with corrected positions
@@ -192,38 +195,94 @@
                 },
                 tree: {
                     positions: [
-                        // Tree trunk (4 vertices)
-                        -0.05, -0.4, 0.0,  // bottom left
-                        0.05, -0.4, 0.0,   // bottom right
-                        0.05, -0.2, 0.0,   // top right
-                        -0.05, -0.2, 0.0,  // top left
+                        // Front face trunk
+                        -0.05, -0.4, 0.05,   // front bottom left
+                        0.05, -0.4, 0.05,    // front bottom right
+                        0.05, -0.2, 0.05,    // front top right
+                        -0.05, -0.2, 0.05,   // front top left
                         
-                        // First layer of foliage (3 vertices)
-                        -0.15, -0.2, 0.0,  // bottom left
-                        0.15, -0.2, 0.0,   // bottom right
-                        0.0, 0.1, 0.0,     // top point
+                        // Back face trunk
+                        -0.05, -0.4, -0.05,  // back bottom left
+                        0.05, -0.4, -0.05,   // back bottom right
+                        0.05, -0.2, -0.05,   // back top right
+                        -0.05, -0.2, -0.05,  // back top left
                         
-                        // Second layer of foliage (3 vertices)
-                        -0.12, -0.1, 0.0,  // left
-                        0.12, -0.1, 0.0,   // right
-                        0.0, 0.2, 0.0      // top
+                        // Left face trunk
+                        -0.05, -0.4, -0.05,  // back bottom
+                        -0.05, -0.4, 0.05,   // front bottom
+                        -0.05, -0.2, 0.05,   // front top
+                        -0.05, -0.2, -0.05,  // back top
+                        
+                        // Right face trunk
+                        0.05, -0.4, -0.05,   // back bottom
+                        0.05, -0.4, 0.05,    // front bottom
+                        0.05, -0.2, 0.05,    // front top
+                        0.05, -0.2, -0.05,   // back top
+                        
+                        // Front triangle (foliage)
+                        -0.15, -0.2, 0.05,   // bottom left
+                        0.15, -0.2, 0.05,    // bottom right
+                        0.0, 0.1, 0.0,       // top
+                        
+                        // Back triangle (foliage)
+                        -0.15, -0.2, -0.05,  // bottom left
+                        0.15, -0.2, -0.05,   // bottom right
+                        0.0, 0.1, 0.0,       // top
+                        
+                        // Left triangle (foliage)
+                        -0.15, -0.2, -0.05,  // back
+                        -0.15, -0.2, 0.05,   // front
+                        0.0, 0.1, 0.0,       // top
+                        
+                        // Right triangle (foliage)
+                        0.15, -0.2, -0.05,   // back
+                        0.15, -0.2, 0.05,    // front
+                        0.0, 0.1, 0.0        // top
                     ],
                     colors: [
-                        // Tree trunk colors (brown)
+                        // Trunk colors (brown) - front face
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         0.545, 0.271, 0.075, 1.0,
                         
-                        // First layer foliage colors (green)
+                        // Trunk colors - back face
+                        0.445, 0.171, 0.075, 1.0,
+                        0.445, 0.171, 0.075, 1.0,
+                        0.445, 0.171, 0.075, 1.0,
+                        0.445, 0.171, 0.075, 1.0,
+                        
+                        // Trunk colors - left face
+                        0.495, 0.221, 0.075, 1.0,
+                        0.495, 0.221, 0.075, 1.0,
+                        0.495, 0.221, 0.075, 1.0,
+                        0.495, 0.221, 0.075, 1.0,
+                        
+                        // Trunk colors - right face
+                        0.495, 0.221, 0.075, 1.0,
+                        0.495, 0.221, 0.075, 1.0,
+                        0.495, 0.221, 0.075, 1.0,
+                        0.495, 0.221, 0.075, 1.0,
+                        
+                        // Foliage colors - front
                         0.0, 0.502, 0.0, 1.0,
                         0.0, 0.502, 0.0, 1.0,
                         0.0, 0.502, 0.0, 1.0,
                         
-                        // Second layer foliage colors (slightly darker green)
+                        // Foliage colors - back
                         0.0, 0.452, 0.0, 1.0,
                         0.0, 0.452, 0.0, 1.0,
-                        0.0, 0.452, 0.0, 1.0
+                        0.0, 0.452, 0.0, 1.0,
+                        
+                        // Foliage colors - left
+                        0.0, 0.477, 0.0, 1.0,
+                        0.0, 0.477, 0.0, 1.0,
+                        0.0, 0.477, 0.0, 1.0,
+                        
+                        // Foliage colors - right
+                        0.0, 0.477, 0.0, 1.0,
+                        0.0, 0.477, 0.0, 1.0,
+                        0.0, 0.477, 0.0, 1.0
                     ]
                 },
                 car: {
@@ -508,72 +567,93 @@
             );
 
             gl.uniform2fv(programInfo.uniformLocations.offset, offset);
+            
+            gl.uniform1i(programInfo.uniformLocations.is3D, shape === 'tree');
 
-            // Draw the shape in multiple passes if needed
-            if (shape === 'car' || shape === 'bus') {
-                // Draw body and roof
-                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // body
-                gl.drawArrays(gl.TRIANGLE_FAN, 4, 4);  // roof
-                // Draw wheels
-                gl.drawArrays(gl.TRIANGLE_FAN, 8, 9);  // front wheel
-                gl.drawArrays(gl.TRIANGLE_FAN, 17, 9); // back wheel
-            } else if (shape === 'house') {
-                // Draw house base
-                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // base rectangle
-                // Draw roof
-                gl.drawArrays(gl.TRIANGLE_FAN, 4, 3);  // roof triangle
-                // Draw windows
-                gl.drawArrays(gl.TRIANGLE_FAN, 7, 4);  // left window
-                gl.drawArrays(gl.TRIANGLE_FAN, 11, 4); // right window
-                // Draw door
-                gl.drawArrays(gl.TRIANGLE_FAN, 15, 4); // door
-            } else if (shape === 'ground') {
-                // Draw main road
-                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // road base
-                // Draw the three dashes
-                gl.drawArrays(gl.TRIANGLE_FAN, 4, 4);   // first dash
-                gl.drawArrays(gl.TRIANGLE_FAN, 8, 4);   // second dash
-                gl.drawArrays(gl.TRIANGLE_FAN, 12, 4);  // third dash
-            } else if (shape === 'tree') {
-                // Draw trunk
-                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);  // trunk rectangle
-                // Draw foliage layers
-                gl.drawArrays(gl.TRIANGLE_FAN, 4, 3);  // first layer triangle
-                gl.drawArrays(gl.TRIANGLE_FAN, 7, 3);  // second layer triangle
-            } else if (shape === 'sun') {
-                // Draw sun/moon as a triangle fan
-                gl.drawArrays(gl.TRIANGLE_FAN, 0, 10);
+            if (shape === 'tree') {
+                gl.enable(gl.DEPTH_TEST);
+                
+                // Draw all trunk faces
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);   // front
+                gl.drawArrays(gl.TRIANGLE_FAN, 4, 4);   // back
+                gl.drawArrays(gl.TRIANGLE_FAN, 8, 4);   // left
+                gl.drawArrays(gl.TRIANGLE_FAN, 12, 4);  // right
+                
+                // Draw foliage triangles
+                gl.drawArrays(gl.TRIANGLES, 16, 3);  // front
+                gl.drawArrays(gl.TRIANGLES, 19, 3);  // back
+                gl.drawArrays(gl.TRIANGLES, 22, 3);  // left
+                gl.drawArrays(gl.TRIANGLES, 25, 3);  // right
+                
+                gl.disable(gl.DEPTH_TEST);
             } else {
-                // Draw other shapes as single triangle fans
-                gl.drawArrays(gl.TRIANGLE_FAN, 0, shapeBuffers.vertexCount);
+                if (shape === 'car' || shape === 'bus') {
+                    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 4, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 8, 9);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 17, 9);
+                } else if (shape === 'house') {
+                    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 4, 3);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 7, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 11, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 15, 4);
+                } else if (shape === 'ground') {
+                    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 4, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 8, 4);
+                    gl.drawArrays(gl.TRIANGLE_FAN, 12, 4);
+                } else {
+                    gl.drawArrays(gl.TRIANGLE_FAN, 0, shapeBuffers.vertexCount);
+                }
             }
         }
 
         function drawScene(gl, programInfo, buffers) {
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             gl.useProgram(programInfo.program);
 
-            // Draw background elements (back to front)
+            // Create rotation matrix for tree (rotation around its own axis)
+            const modelViewMatrix = [
+                Math.cos(treeRotation), 0, Math.sin(treeRotation), 0,
+                0, 1, 0, 0,
+                -Math.sin(treeRotation), 0, Math.cos(treeRotation), 0,
+                0.4 - 0.4 * Math.cos(treeRotation), 0, -0.4 * Math.sin(treeRotation), 1
+            ];
+            
+            gl.uniformMatrix4fv(
+                programInfo.uniformLocations.modelViewMatrix,
+                false,
+                modelViewMatrix
+            );
+
+            // Draw background elements
             drawShape(gl, programInfo, buffers, 'sky');
             drawShape(gl, programInfo, buffers, 'sun');
             drawShape(gl, programInfo, buffers, 'ground');
 
-            // Draw static elements
+            // Draw tree with rotation (but keep it in place)
             drawShape(gl, programInfo, buffers, 'tree', [0.4, 0]);
+            
+            // Draw remaining elements
             drawShape(gl, programInfo, buffers, 'house', [-0.3, 0]);
-
-            // Draw moving elements
-            drawShape(gl, programInfo, buffers, 'bus', [personPosition, 0]);
+            drawShape(gl, programInfo, buffers, 'bus', [busPosition, 0]);
             drawShape(gl, programInfo, buffers, 'car', [carPosition, 0]);
 
-            // Update animation
+            // Update animations
             carPosition += 0.01;
             if (carPosition > 1.4) carPosition = -1.4;
             
-            personPosition -= 0.005;
-            if (personPosition < -1.4) personPosition = 1.4;
+            busPosition -= 0.005;
+            if (busPosition < -1.4) busPosition = 1.4;
+
+            // Update tree rotation (slower rotation)
+            treeRotation += 0.02;
+            if (treeRotation > Math.PI * 2) {
+                treeRotation = 0; // Reset rotation after full circle
+            }
 
             requestAnimationFrame(() => drawScene(gl, programInfo, buffers));
         }
@@ -593,7 +673,9 @@
                     vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
                 },
                 uniformLocations: {
+                    modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
                     offset: gl.getUniformLocation(shaderProgram, 'uOffset'),
+                    is3D: gl.getUniformLocation(shaderProgram, 'uIs3D'),
                 },
             };
 
@@ -606,37 +688,32 @@
                 isNight = !isNight;
                 document.getElementById('themeButton').textContent = isNight ? 'Switch to Day' : 'Switch to Night';
                 
-                // Update sky colors based on time of day
                 const skyColors = isNight ? 
                     new Array(4).fill([0.0, 0.0, 0.2, 1.0]).flat() : 
                     new Array(4).fill([0.529, 0.808, 0.922, 1.0]).flat();
                 
-                // Update the sky buffer with new colors
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sky.color);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(skyColors), gl.STATIC_DRAW);
 
-                // Update sun/moon colors
                 const celestialColors = isNight ?
-                    new Array(10).fill([0.9, 0.9, 0.9, 1.0]).flat() : // White/gray for moon
-                    new Array(10).fill([1.0, 1.0, 0.0, 1.0]).flat();  // Yellow for sun
+                    new Array(10).fill([0.9, 0.9, 0.9, 1.0]).flat() :
+                    new Array(10).fill([1.0, 1.0, 0.0, 1.0]).flat();
                 
-                // Update the sun/moon buffer with new colors
                 gl.bindBuffer(gl.ARRAY_BUFFER, buffers.sun.color);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(celestialColors), gl.STATIC_DRAW);
             });
 
-            // Handle window resize
             window.addEventListener('resize', () => {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
                 gl.viewport(0, 0, canvas.width, canvas.height);
             });
 
-            // Start the animation loop
             drawScene(gl, programInfo, buffers);
         }
 
-        // Start the application
+        let treeRotation = 0;
+
         main();
     </script>
 </body>
