@@ -575,18 +575,18 @@
                 modelViewMatrix
             );
 
-            // Draw background elements
+            // Draw background elements (back to front)
             drawShape(gl, programInfo, buffers, 'sky');
             drawShape(gl, programInfo, buffers, 'sun');
             drawShape(gl, programInfo, buffers, 'ground');
 
             // Draw static elements
-            drawShape(gl, programInfo, buffers, 'house', [-0.3, 0]);
             drawShape(gl, programInfo, buffers, 'tree', [0.4, 0]);
+            drawShape(gl, programInfo, buffers, 'house', [-0.3, 0]);
 
-            // Draw moving elements
-            drawShape(gl, programInfo, buffers, 'car', [carPosition, 0]);
-            drawShape(gl, programInfo, buffers, 'bus', [personPosition, 0]);
+            // Draw moving elements (bus first, then car)
+            drawShape(gl, programInfo, buffers, 'bus', [personPosition, 0]);  // Draw bus first
+            drawShape(gl, programInfo, buffers, 'car', [carPosition, 0]);     // Draw car last so it appears on top
 
             // Update animation
             carPosition += 0.01;
